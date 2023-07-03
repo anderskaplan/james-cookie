@@ -11,28 +11,75 @@ function cookieCompare(a, b) {
     return delta
 }
 
-chrome.cookies.getAllCookieStores()
-    .then((cookieStores) => {
-        const rootNode = document.getElementById("cookie-stores")
+function classifyCookie(cookie) {
+    const classes = []
+    if (cookie.name.startsWith("_ga") && cookie.value.startsWith("G")) {
+        classes.push("google-analytics")
+    }
+    if (!classes.length) {
+        classes.push("other")
+    }
+    return classes.join(" ")
+}
 
-        cookieStores.forEach((store) => {
-            const storeNode = document.createElement("div")
-            storeNode.innerHTML = "<h2>Cookie store \"" + store.id + "\"</h2>"
-            rootNode.appendChild(storeNode)
+function renderCookieStore(storeId) {
+    const storeNode = document.createElement("div")
+    storeNode.innerHTML = "<h2>Cookie store \"" + storeId + "\"</h2>"
 
-            const tableNode = document.createElement("table")
-            tableNode.innerHTML = "<thead><tr><th scope='col'>Domain</th><th scope='col'>Path</th><th scope='col'>Name</th><th scope='col'>Expiration</th><th scope='col'>Value</th></tr></thead>"
-            storeNode.appendChild(tableNode)
+    const tableNode = document.createElement("table")
+    tableNode.innerHTML = "<thead><tr><th scope='col'>Domain</th><th scope='col'>Path</th><th scope='col'>Name</th><th scope='col'>Expiration</th><th scope='col'>Value</th></tr></thead>"
+    storeNode.appendChild(tableNode)
 
-            chrome.cookies.getAll({ "storeId": store.id })
-                .then((cookies) => {
-                    cookies.sort(cookieCompare)
-                    cookies.forEach((cookie) => {
-                        const expiration = (cookie.session) ? "session" : new Date(cookie.expirationDate * 1000).toISOString().split("T")[0]
-                        const item = document.createElement("tr");
-                        item.innerHTML = "<td>" + cookie.domain + "</td><td>" + cookie.path + "</td><td>" + cookie.name + "</td><td>" + expiration + "</td><td>" + cookie.value + "</td>"
-                        tableNode.appendChild(item);
-                    });
-                });
-        });
-    });
+    chrome.cookies.getAll({ "storeId": storeId })
+        .then(cookies => {
+            cookies.sort(cookieCompare)
+            cookies.forEach(cookie => {
+                const expiration = (cookie.expirationDate) ? new Date(cookie.expirationDate * 1000).toISOString().split("T")[0] : ""
+                const item = document.createElement("tr")
+                item.innerHTML = "<td>" + cookie.domain + "</td><td>" + cookie.path + "</td><td>" + cookie.name + "</td><td>" + expiration + "</td><td>" + cookie.value + "</td>"
+                item.classList.value = classifyCookie(cookie)
+                tableNode.appendChild(item)
+            })
+        })
+
+    return storeNode
+}
+
+function updateVisibility() {
+    const hidden = []
+    document.querySelectorAll("input[type=checkbox]").forEach(input => {
+        if (!input.checked) {
+            hidden.push(input.name)
+        }
+    })
+
+    document.querySelectorAll("tr").forEach(tr => {
+        if (hidden.some(item => tr.classList.contains(item))) {
+            tr.classList.add("hidden")
+        }
+        else {
+            tr.classList.remove("hidden")
+        }
+    })
+}
+
+function renderAllCookieStores() {
+    const rootNode = document.getElementById("cookie-stores")
+    rootNode.innerHTML = ""
+
+    chrome.cookies.getAllCookieStores()
+        .then((cookieStores) => {
+            cookieStores.forEach(store => {
+                const storeNode = renderCookieStore(store.id)
+                rootNode.appendChild(storeNode)
+            })
+        })
+
+    updateVisibility()
+}
+
+document.querySelectorAll("input[type=checkbox]").forEach(input => {
+    input.addEventListener("click", updateVisibility)
+})
+
+renderAllCookieStores()

@@ -22,3 +22,11 @@ td {
     text-overflow: ellipsis;
     border: 1px solid lightgray;
 }
+
+tr.google-analytics {
+    background-color: lightyellow;
+}
+
+.hidden {
+    display: none;
+}
