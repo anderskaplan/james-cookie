@@ -1,3 +1,7 @@
+fieldset {
+    max-width: 300px;
+}
+
 table {
     table-layout: fixed;
     border-collapse: collapse;
@@ -6,7 +10,7 @@ table {
 
 thead th:nth-child(1) { width: 250px; } /* domain */
 thead th:nth-child(2) { width: 100px; } /* path */
-thead th:nth-child(3) { width: 150px; } /* name */
+thead th:nth-child(3) { width: 200px; } /* name */
 thead th:nth-child(4) { width: 100px; } /* expiration */
 thead th:nth-child(5) { width: 100%; } /* value */
 
@@ -25,6 +29,10 @@ td {
 
 tr.google-analytics {
     background-color: lightyellow;
+}
+
+tr.uid {
+    background-color: #ECF8F2;
 }
 
 .hidden {

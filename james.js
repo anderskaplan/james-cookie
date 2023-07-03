@@ -1,3 +1,5 @@
+const SECONDS_PER_YEAR = 365 * 24 * 3600
+
 function reverseDomain(domain) {
     return domain.split(".").toReversed().join(".")
 }
@@ -13,13 +15,26 @@ function cookieCompare(a, b) {
 
 function classifyCookie(cookie) {
     const classes = []
+
+    const lowerCaseNameValue = (cookie.name + cookie.value).toLowerCase()
     if (cookie.name.startsWith("_ga") && cookie.value.startsWith("G")) {
         classes.push("google-analytics")
     }
-    if (!classes.length) {
+    else if (lowerCaseNameValue.includes("uid") || lowerCaseNameValue.includes("userid")) {
+        classes.push("uid")
+    }
+    else {
         classes.push("other")
     }
-    return classes.join(" ")
+
+    if (cookie.expirationDate && cookie.expirationDate > Date.now() / 1000 + SECONDS_PER_YEAR) {
+        classes.push("long")
+    }
+    else {
+        classes.push("short")
+    }
+
+    return classes
 }
 
 function renderCookieStore(storeId) {
@@ -37,7 +52,7 @@ function renderCookieStore(storeId) {
                 const expiration = (cookie.expirationDate) ? new Date(cookie.expirationDate * 1000).toISOString().split("T")[0] : ""
                 const item = document.createElement("tr")
                 item.innerHTML = "<td>" + cookie.domain + "</td><td>" + cookie.path + "</td><td>" + cookie.name + "</td><td>" + expiration + "</td><td>" + cookie.value + "</td>"
-                item.classList.value = classifyCookie(cookie)
+                classifyCookie(cookie).forEach(cls => item.classList.add(cls))
                 tableNode.appendChild(item)
             })
         })

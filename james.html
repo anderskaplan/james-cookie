@@ -11,14 +11,33 @@
 <body>
     <h1>James the Cookie Explorer</h1>
 
-    <div>
-        <input id="cs-ga" name="google-analytics" type="checkbox" checked />
-        <label for="cs-ga">Google Analytics</label>
-    </div>
-    <div>
-        <input id="cs-other" name="other" type="checkbox" checked />
-        <label for="cs-other">Other</label>
-    </div>
+    <fieldset>
+        <legend>Cookie type</legend>
+        <div>
+            <input id="cs-ga" name="google-analytics" type="checkbox" checked />
+            <label for="cs-ga">Google Analytics</label>
+        </div>
+        <div>
+            <input id="cs-uid" name="uid" type="checkbox" checked />
+            <label for="cs-uid">User ID</label>
+        </div>
+        <div>
+            <input id="cs-other" name="other" type="checkbox" checked />
+            <label for="cs-other">Other</label>
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Expiry time</legend>
+        <div>
+            <input id="cs-short" name="short" type="checkbox" checked />
+            <label for="cs-short">Within a year</label>
+        </div>
+        <div>
+            <input id="cs-long" name="long" type="checkbox" checked />
+            <label for="cs-long">Long</label>
+        </div>
+    </fieldset>
 
     <div id="cookie-stores"></div>
 </body>
