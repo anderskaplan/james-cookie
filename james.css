@@ -1,0 +1,24 @@
+table {
+    table-layout: fixed;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+thead th:nth-child(1) { width: 250px; } /* domain */
+thead th:nth-child(2) { width: 100px; } /* path */
+thead th:nth-child(3) { width: 150px; } /* name */
+thead th:nth-child(4) { width: 100px; } /* expiration */
+thead th:nth-child(5) { width: 100%; } /* value */
+
+th {
+    background-color: lightgray;
+}
+
+th,
+td {
+    padding: 10px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    border: 1px solid lightgray;
+}
