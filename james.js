@@ -13,14 +13,15 @@ function cookieCompare(a, b) {
     return delta
 }
 
+const USER_ID_REGEX = /(u|user|visitor|subject)[_-]?id/i
+
 function classifyCookie(cookie) {
     const classes = []
 
-    const lowerCaseNameValue = (cookie.name + cookie.value).toLowerCase()
     if (cookie.name.startsWith("_ga") && cookie.value.startsWith("G")) {
         classes.push("google-analytics")
     }
-    else if (lowerCaseNameValue.includes("uid") || lowerCaseNameValue.includes("userid")) {
+    else if (USER_ID_REGEX.test(cookie.name)) {
         classes.push("uid")
     }
     else {
