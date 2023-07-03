@@ -11,11 +11,19 @@
 <body>
     <h1>James the Cookie Explorer</h1>
 
+    <p>This Chrome plugin lets you view all the cookies that web sites have stored in your browser.</p>
+
+    <p>Note: cookies may include secret information such as session keys. Do not share this information with anyone.</p>
+
     <fieldset>
         <legend>Cookie type</legend>
         <div>
             <input id="cs-ga" name="google-analytics" type="checkbox" checked />
             <label for="cs-ga">Google Analytics</label>
+        </div>
+        <div>
+            <input id="cs-hotjar" name="hotjar" type="checkbox" checked />
+            <label for="cs-hotjar">HotJar Analytics</label>
         </div>
         <div>
             <input id="cs-uid" name="uid" type="checkbox" checked />
@@ -28,6 +36,18 @@
     </fieldset>
 
     <fieldset>
+        <legend>Data type</legend>
+        <div>
+            <input id="cs-json" name="json" type="checkbox" checked />
+            <label for="cs-json">JSON</label>
+        </div>
+        <div>
+            <input id="cs-other-data" name="other-data" type="checkbox" checked />
+            <label for="cs-other-data">Other</label>
+        </div>
+    </fieldset>
+
+    <fieldset>
         <legend>Expiry time</legend>
         <div>
             <input id="cs-short" name="short" type="checkbox" checked />
@@ -35,7 +55,7 @@
         </div>
         <div>
             <input id="cs-long" name="long" type="checkbox" checked />
-            <label for="cs-long">Long</label>
+            <label for="cs-long">More than a year from now</label>
         </div>
     </fieldset>
 

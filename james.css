@@ -27,13 +27,17 @@ td {
     border: 1px solid lightgray;
 }
 
-tr.google-analytics {
+tr.google-analytics, tr.hotjar {
     background-color: lightyellow;
 }
 
 tr.uid {
     background-color: #ECF8F2;
 }
+
+/* tr.json {
+    background-color: #E9FAFC;
+} */
 
 .hidden {
     display: none;

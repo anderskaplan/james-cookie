@@ -13,6 +13,31 @@ function cookieCompare(a, b) {
     return delta
 }
 
+function formatCookieValue(cookie) {
+    if (cookie.value.startsWith("ey")) {
+        try {
+            return atob(cookie.value.split("%")[0])
+        }
+        catch (error) {}
+    }
+
+    if (cookie.value.startsWith("%7B") || cookie.value.startsWith("%7b")) {
+        try {
+            return decodeURIComponent(cookie.value)
+        }
+        catch (error) {}
+    }
+
+    if (cookie.value.startsWith("{") && cookie.value.includes("%22")) {
+        try {
+            return decodeURIComponent(cookie.value)
+        }
+        catch (error) {}
+    }
+
+    return cookie.value
+}
+
 const USER_ID_REGEX = /(u|user|visitor|subject)[_-]?id/i
 
 function classifyCookie(cookie) {
@@ -21,11 +46,21 @@ function classifyCookie(cookie) {
     if (cookie.name.startsWith("_ga") && cookie.value.startsWith("G")) {
         classes.push("google-analytics")
     }
+    else if (cookie.name.startsWith("_hjSessionUser")) {
+        classes.push("hotjar")
+    }
     else if (USER_ID_REGEX.test(cookie.name)) {
         classes.push("uid")
     }
     else {
         classes.push("other")
+    }
+
+    if (cookie.value.startsWith("ey") || cookie.value.startsWith("%7B") || cookie.value.startsWith("%7b") || cookie.value.startsWith("{")) {
+        classes.push("json")
+    }
+    else {
+        classes.push("other-data")
     }
 
     if (cookie.expirationDate && cookie.expirationDate > Date.now() / 1000 + SECONDS_PER_YEAR) {
@@ -51,8 +86,9 @@ function renderCookieStore(storeId) {
             cookies.sort(cookieCompare)
             cookies.forEach(cookie => {
                 const expiration = (cookie.expirationDate) ? new Date(cookie.expirationDate * 1000).toISOString().split("T")[0] : ""
+                const value = formatCookieValue(cookie)
                 const item = document.createElement("tr")
-                item.innerHTML = "<td>" + cookie.domain + "</td><td>" + cookie.path + "</td><td>" + cookie.name + "</td><td>" + expiration + "</td><td>" + cookie.value + "</td>"
+                item.innerHTML = "<td>" + cookie.domain + "</td><td>" + cookie.path + "</td><td>" + cookie.name + "</td><td>" + expiration + "</td><td>" + value + "</td>"
                 classifyCookie(cookie).forEach(cls => item.classList.add(cls))
                 tableNode.appendChild(item)
             })
