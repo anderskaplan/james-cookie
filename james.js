@@ -1,4 +1,25 @@
-const SECONDS_PER_YEAR = 365 * 24 * 3600
+// James the Cookie Explorer
+
+function getAllCookies() {
+    // return all cookies from all cookie stores as a `Promise<Cookie[]>`.
+    // see https://developer.chrome.com/docs/extensions/reference/cookies/
+    return chrome.cookies.getAllCookieStores()
+        .then((cookieStores) => {
+            const requests = []
+            cookieStores.forEach((store) => requests.push(chrome.cookies.getAll({ "storeId": store.id })))
+            return Promise.allSettled(requests)
+                .then((promises) => {
+                    return promises.map((p) => p.value)
+                })
+        })
+        .then((cookieArrays) => {
+            var result = []
+            cookieArrays.forEach((a) => result = result.concat(a))
+            return result
+        })
+}
+
+// cookie comparison, for sorting
 
 function reverseDomain(domain) {
     return domain.split(".").toReversed().join(".")
@@ -26,31 +47,9 @@ function compareCookieExpirationTimes(a, b) {
     return (a.expirationDate ?? 0) - (b.expirationDate ?? 0)
 }
 
-function formatCookieValue(cookie) {
-    if (cookie.value.startsWith("ey")) {
-        try {
-            return atob(cookie.value.split("%")[0])
-        }
-        catch (error) { }
-    }
+// cookie classification
 
-    if (cookie.value.startsWith("%7B") || cookie.value.startsWith("%7b")) {
-        try {
-            return decodeURIComponent(cookie.value)
-        }
-        catch (error) { }
-    }
-
-    if (cookie.value.startsWith("{") && cookie.value.includes("%22")) {
-        try {
-            return decodeURIComponent(cookie.value)
-        }
-        catch (error) { }
-    }
-
-    return cookie.value
-}
-
+const SECONDS_PER_YEAR = 365 * 24 * 3600
 const USER_ID_REGEX = /(u|user|visitor|subject)[_-]?id/i
 
 function classifyCookie(cookie) {
@@ -86,6 +85,8 @@ function classifyCookie(cookie) {
     return classes
 }
 
+// cookie rendering
+
 function updateVisibility() {
     const hidden = []
     document.querySelectorAll("input[type=checkbox]").forEach(input => {
@@ -104,22 +105,29 @@ function updateVisibility() {
     })
 }
 
-function getAllCookies() {
-    // return all cookies from all cookie stores as a `Promise<Cookie[]>`.
-    return chrome.cookies.getAllCookieStores()
-        .then((cookieStores) => {
-            const requests = []
-            cookieStores.forEach((store) => requests.push(chrome.cookies.getAll({ "storeId": store.id })))
-            return Promise.allSettled(requests)
-                .then((promises) => {
-                    return promises.map((p) => p.value)
-                })
-        })
-        .then((cookieArrays) => {
-            var result = []
-            cookieArrays.forEach((a) => result = result.concat(a))
-            return result
-        })
+function formatCookieValue(cookie) {
+    if (cookie.value.startsWith("ey")) {
+        try {
+            return atob(cookie.value.split("%")[0])
+        }
+        catch (error) { }
+    }
+
+    if (cookie.value.startsWith("%7B") || cookie.value.startsWith("%7b")) {
+        try {
+            return decodeURIComponent(cookie.value)
+        }
+        catch (error) { }
+    }
+
+    if (cookie.value.startsWith("{") && cookie.value.includes("%22")) {
+        try {
+            return decodeURIComponent(cookie.value)
+        }
+        catch (error) { }
+    }
+
+    return cookie.value
 }
 
 function renderCookies(cookies) {
@@ -137,6 +145,8 @@ function renderCookies(cookies) {
 
     updateVisibility()
 }
+
+// main & event handlers
 
 var allCookies = []
 

@@ -6,6 +6,7 @@ table {
     table-layout: fixed;
     border-collapse: collapse;
     width: 100%;
+    margin-top: 10px;
 }
 
 thead th:nth-child(1) { width: 250px; } /* domain */
