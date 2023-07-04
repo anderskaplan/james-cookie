@@ -18,21 +18,21 @@ function formatCookieValue(cookie) {
         try {
             return atob(cookie.value.split("%")[0])
         }
-        catch (error) {}
+        catch (error) { }
     }
 
     if (cookie.value.startsWith("%7B") || cookie.value.startsWith("%7b")) {
         try {
             return decodeURIComponent(cookie.value)
         }
-        catch (error) {}
+        catch (error) { }
     }
 
     if (cookie.value.startsWith("{") && cookie.value.includes("%22")) {
         try {
             return decodeURIComponent(cookie.value)
         }
-        catch (error) {}
+        catch (error) { }
     }
 
     return cookie.value
@@ -73,30 +73,6 @@ function classifyCookie(cookie) {
     return classes
 }
 
-function renderCookieStore(storeId) {
-    const storeNode = document.createElement("div")
-    storeNode.innerHTML = "<h2>Cookie store \"" + storeId + "\"</h2>"
-
-    const tableNode = document.createElement("table")
-    tableNode.innerHTML = "<thead><tr><th scope='col'>Domain</th><th scope='col'>Path</th><th scope='col'>Name</th><th scope='col'>Expiration</th><th scope='col'>Value</th></tr></thead>"
-    storeNode.appendChild(tableNode)
-
-    chrome.cookies.getAll({ "storeId": storeId })
-        .then(cookies => {
-            cookies.sort(cookieCompare)
-            cookies.forEach(cookie => {
-                const expiration = (cookie.expirationDate) ? new Date(cookie.expirationDate * 1000).toISOString().split("T")[0] : ""
-                const value = formatCookieValue(cookie)
-                const item = document.createElement("tr")
-                item.innerHTML = "<td>" + cookie.domain + "</td><td>" + cookie.path + "</td><td>" + cookie.name + "</td><td>" + expiration + "</td><td>" + value + "</td>"
-                classifyCookie(cookie).forEach(cls => item.classList.add(cls))
-                tableNode.appendChild(item)
-            })
-        })
-
-    return storeNode
-}
-
 function updateVisibility() {
     const hidden = []
     document.querySelectorAll("input[type=checkbox]").forEach(input => {
@@ -115,23 +91,49 @@ function updateVisibility() {
     })
 }
 
-function renderAllCookieStores() {
-    const rootNode = document.getElementById("cookie-stores")
-    rootNode.innerHTML = ""
-
-    chrome.cookies.getAllCookieStores()
+function getAllCookies() {
+    // return all cookies from all cookie stores as a `Promise<Cookie[]>`.
+    return chrome.cookies.getAllCookieStores()
         .then((cookieStores) => {
-            cookieStores.forEach(store => {
-                const storeNode = renderCookieStore(store.id)
-                rootNode.appendChild(storeNode)
-            })
+            const requests = []
+            cookieStores.forEach((store) => requests.push(chrome.cookies.getAll({ "storeId": store.id })))
+            return Promise.allSettled(requests)
+                .then((promises) => {
+                    return promises.map((p) => p.value)
+                })
         })
+        .then((cookieArrays) => {
+            var result = []
+            cookieArrays.forEach((a) => result = result.concat(a))
+            return result
+        })
+}
+
+function renderCookies(cookies) {
+    const tableBodyNode = document.querySelector("#cookie-table tbody")
+    tableBodyNode.innerHTML = ""
+
+    cookies.forEach(cookie => {
+        const expiration = (cookie.expirationDate) ? new Date(cookie.expirationDate * 1000).toISOString().split("T")[0] : ""
+        const value = formatCookieValue(cookie)
+        const rowNode = document.createElement("tr")
+        rowNode.innerHTML = "<td>" + cookie.domain + "</td><td>" + cookie.path + "</td><td>" + cookie.name + "</td><td>" + expiration + "</td><td>" + value + "</td>"
+        classifyCookie(cookie).forEach(cls => rowNode.classList.add(cls))
+        tableBodyNode.appendChild(rowNode)
+    })
 
     updateVisibility()
 }
 
+var allCookies = []
+
+getAllCookies()
+    .then((cookies) => {
+        allCookies = cookies
+        allCookies.sort(cookieCompare)
+        renderCookies(allCookies)
+    })
+
 document.querySelectorAll("input[type=checkbox]").forEach(input => {
     input.addEventListener("click", updateVisibility)
 })
-
-renderAllCookieStores()
