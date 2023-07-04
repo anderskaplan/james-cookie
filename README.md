@@ -7,3 +7,6 @@ TODO
 - instructions for how to install
 - instructions for use
 - description
+
+https://cookiedatabase.org/
+https://developer.chrome.com/docs/extensions/reference/cookies/

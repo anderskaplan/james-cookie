@@ -18,6 +18,14 @@ th {
     background-color: lightgray;
 }
 
+th[id] {
+    cursor: pointer;
+}
+
+th.sort:after {
+    content: " ▲";
+}
+
 th,
 td {
     padding: 10px;

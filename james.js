@@ -4,13 +4,26 @@ function reverseDomain(domain) {
     return domain.split(".").toReversed().join(".")
 }
 
-function cookieCompare(a, b) {
+function compareCookieDomains(a, b) {
     var delta = reverseDomain(a.domain).localeCompare(reverseDomain(b.domain))
     if (delta === 0)
         delta = a.path.localeCompare(b.path)
     if (delta === 0)
         delta = a.name.localeCompare(b.name)
     return delta
+}
+
+function compareCookieNames(a, b) {
+    var delta = a.name.localeCompare(b.name)
+    if (delta === 0)
+        delta = reverseDomain(a.domain).localeCompare(reverseDomain(b.domain))
+    if (delta === 0)
+        delta = a.path.localeCompare(b.path)
+    return delta
+}
+
+function compareCookieExpirationTimes(a, b) {
+    return (a.expirationDate ?? 0) - (b.expirationDate ?? 0)
 }
 
 function formatCookieValue(cookie) {
@@ -127,13 +140,33 @@ function renderCookies(cookies) {
 
 var allCookies = []
 
+function sortAndRender(headerId, sortFunction) {
+    document.querySelectorAll("th[id]").forEach((headingNode) => {
+        if (headingNode.getAttribute("id") === headerId) {
+            headingNode.classList.add("sort")
+        }
+        else {
+            headingNode.classList.remove("sort")
+        }
+    })
+
+    allCookies.sort(sortFunction)
+    renderCookies(allCookies)
+}
+
 getAllCookies()
     .then((cookies) => {
         allCookies = cookies
-        allCookies.sort(cookieCompare)
-        renderCookies(allCookies)
+        sortAndRender("heading-domain", compareCookieDomains)
     })
 
 document.querySelectorAll("input[type=checkbox]").forEach(input => {
     input.addEventListener("click", updateVisibility)
 })
+
+document.getElementById("heading-domain")
+    .addEventListener("click", () => sortAndRender("heading-domain", compareCookieDomains))
+document.getElementById("heading-name")
+    .addEventListener("click", () => sortAndRender("heading-name", compareCookieNames))
+document.getElementById("heading-expiration")
+    .addEventListener("click", () => sortAndRender("heading-expiration", compareCookieExpirationTimes))
